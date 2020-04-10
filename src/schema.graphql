@@ -1,0 +1,33 @@
+# import * from './generated/prisma.graphql'
+
+# Public Facing API. What the frontend interfaces with GraphQL
+
+type SuccessMessage{
+    message: String
+}
+
+type Mutation {
+    createItem(title: String, description: String, price:Int, image:String, largeImage:String): Item!
+    updateItem(id: ID!, title: String, description: String, price:Int, image:String, largeImage:String): Item!
+    deleteItem(id: ID!): Item!
+    signUp(email: String!, password: String!, firstname: String!, lastname: String): User! 
+    login(email: String!, password: String!): User!
+    signout: SuccessMessage
+    requestReset(email: String!): SuccessMessage
+    resetPassword(email: String!, resetToken: String!, password: String!, confirmPassword: String!): User!
+}
+
+type Query {
+    items(where: ItemWhereInput, orderBy: ItemOrderByInput, skip: Int, first: Int): [Item]!
+    item(where: ItemWhereUniqueInput!): Item!
+    itemsConnection(where: ItemWhereInput): ItemConnection!
+    me: User 
+    user(where: UserWhereInput): User
+}
+
+type User {
+    id: ID!
+    firstname: String!
+    lastname: String
+    email: String!
+}
