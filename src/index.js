@@ -22,6 +22,7 @@ server.express.use((req, res, next) => {
 });
 //TODO: Use Express MiddleWare to populate current user
 
+
 server.start({
     cors: {
         credentials: true,
