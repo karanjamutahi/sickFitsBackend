@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt =  require('jsonwebtoken');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
+const { transport, makeANiceEmail } = require('../../src/mail');
 
 const generateJWT = function(userID) {
     return jwt.sign({userId: userID }, process.env.APP_SECRET);
@@ -126,21 +127,28 @@ const mutations = {
             throw new Error("Can't find user by that email. Please sign up");
         }
 
-        //2. Generate reset token
+        //2. Generate reset token and append it to user
         const resetToken = (await promisify(randomBytes)(30)).toString('hex');
         const resetTokenExpiry = Date.now() + (1000*60*60*1); //1 Hour
         const res = await ctx.db.mutation.updateUser({
             where: {
-                email: args.email
+                id: user.id
             },
             data: {
                 resetToken,
                 resetTokenExpiry,
             }
         });
-        console.log(res);
+
         //3. Email them the reset token
-        return { message: `Reset Token is ${resetToken}`}
+        const mailRes = await transport.sendMail({
+            from: 'recoverpassword@sickfits.ke',
+            to: user.email,
+            subject: "Recover your Password",
+            html: makeANiceEmail(`Your Password Reset is here!\n\n<a href="${process.env.FRONTEND_URL}/passwordReset/${user.id}/${resetToken}">Click Here to Reset!</a>`)
+        }) 
+        //4. Return message
+        return { message: `${process.env.FRONTEND_URL}/passwordReset/${user.id}/${resetToken}`}
     },
 
     async resetPassword (parent, args, ctx, info)  {
@@ -149,17 +157,17 @@ const mutations = {
             throw new Error("Passwords do not match");
         }
 
-        // 2. Check if reset token is legit)
+        // 2. Check if reset token is legit
         // 3. Make sure its not expired
         const [user] = await ctx.db.query.users({
             where: {
-                email: args.email,
+                id: args.id,
                 resetToken: args.resetToken,
                 resetTokenExpiry_gte: Date.now()  // - (1000 * 60 * 60 * 1) 1 Hour has not yet passed
             }
         });
         if(!user) {
-            throw new Error('Invalid Token. Please try again. If the issue persists contact Support.');
+            throw new Error('Invalid or Expired Token. Please try again. If the issue persists contact Support.');
         }
 
         // 4. Hash their new password
