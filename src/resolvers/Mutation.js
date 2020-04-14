@@ -10,9 +10,17 @@ const generateJWT = function(userID) {
 
 const mutations = {
     async createItem(parent, args,ctx, info) {
+        if(!ctx.request.userID) {
+            throw new Error('You must be logged in to do that');
+        }
         //TODO Check if they are logged in
         const item = await ctx.db.mutation.createItem({
             data: {
+                user: {
+                    connect: {
+                        id: ctx.request.userID
+                    }
+                },
                 ...args
             }
         }, info);
