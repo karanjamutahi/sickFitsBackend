@@ -15,13 +15,25 @@ server.express.use((req, res, next) => {
     
     if(token) {
         const { userId } = jwt.verify(token, process.env.APP_SECRET);
-        //put userID on the request for further requests
+        //put userID on the request for the other steps
         req.userID = userId;
     }
     next();
 });
 //TODO: Use Express MiddleWare to populate current user
+server.express.use(async (req, res, next) => {
+    //if they aren't logged in, skip this
+    if(!req.userID) return next();
 
+    const user = await db.query.user({
+        where: {
+            id: req.userID
+        }
+    }, '{ id, permissions, email, firstname, lastname}');
+    
+    req.user = user; 
+    next();
+});
 
 server.start({
     cors: {
