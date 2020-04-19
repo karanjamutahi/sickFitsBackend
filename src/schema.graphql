@@ -15,6 +15,7 @@ type Mutation {
     signout: SuccessMessage
     requestReset(email: String!): SuccessMessage
     resetPassword(resetToken: String!, password: String!, confirmPassword: String!): User!
+    updatePermissions(where:UserWhereUniqueInput!, permissions:[Permission]!) :UserPermissions
 }
 
 type Query {
@@ -22,7 +23,8 @@ type Query {
     item(where: ItemWhereUniqueInput!): Item!
     itemsConnection(where: ItemWhereInput): ItemConnection!
     me: User 
-    user(where: UserWhereInput): User
+    user(where: UserWhereInput): UserPermissions
+    users: [UserPermissions]!
 }
 
 type User {
@@ -30,4 +32,13 @@ type User {
     firstname: String!
     lastname: String
     email: String!
+}
+
+# Type to show only to users with admin privileges
+type UserPermissions {
+    id: ID!
+    firstname: String!
+    lastname: String
+    email: String!
+    permissions: [Permission]!
 }
