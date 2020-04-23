@@ -16,6 +16,8 @@ type Mutation {
     requestReset(email: String!): SuccessMessage
     resetPassword(resetToken: String!, password: String!, confirmPassword: String!): User!
     updatePermissions(where:UserWhereUniqueInput!, permissions:[Permission]!) :UserPermissions
+    addToCart(id: ID!): CartItem
+    removeFromCart(id: ID!): CartItem
 }
 
 type Query {
@@ -32,6 +34,7 @@ type User {
     firstname: String!
     lastname: String
     email: String!
+    cart: [CartItem!]!
 }
 
 # Type to show only to users with admin privileges
