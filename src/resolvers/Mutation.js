@@ -43,7 +43,7 @@ const mutations = {
 
     async deleteItem(parent, args, ctx, info) {
         //1. find the item
-        const where = { id : args.id };
+        const where = { id : args.id  };
         const item = await ctx.db.query.item({ where }, `{id title user {id} }`);
     
         //2. Check if they own the item
@@ -241,6 +241,73 @@ const mutations = {
 
     },
 
+    async addToCart(parent, args, ctx, info) {
+        //1. Make sure they're signed in
+        const { userID } = ctx.request;
+        if(!userID) throw new Error("You must be Logged in to do that");
+        
+        //2. Query the Users current cart
+        const [ existingCartItem ] = await ctx.db.query.cartItems({
+            where: {
+                user: {
+                    id: userID
+                },
+                item: {
+                    id: args.id
+                }
+            }
+        }, info);
+
+        //3. Check if the item is already in the cart
+        if(existingCartItem) {
+            console.log("This item is already in their cart");
+            return ctx.db.mutation.updateCartItem({
+                where: {
+                    id: existingCartItem.id,
+                },
+                data: {
+                    quantity: existingCartItem.quantity + 1
+                }                
+            }, info)
+        }
+
+        //4. Add the item
+        return ctx.db.mutation.createCartItem({
+            data: {
+                user: {
+                    connect:  {
+                        id: userID
+                    }
+                },
+                item: {
+                    connect: {
+                        id: args.id
+                    }
+                }
+            }
+        }, info)
+    },
+
+    async removeFromCart(parent, args, ctx, info) {
+        //1. Find the cartitem
+        const CartItem = await ctx.db.query.cartItem({
+            where: {
+                id: args.id
+            }
+        }, info);
+
+        if(!CartItem) throw new Error("No Cart Item Found");
+        
+        //2. Make sure they own the cartitem
+        if(CartItem.user.id !== ctx.request.userID) throw new Error("You can't do that! Malice detected");
+
+        //3. Delete the cartitem
+        return ctx.db.mutation.deleteCartItem({
+            where: {
+                id: CartItem.id
+            }
+        }, info);
+    }
 };
 
 module.exports = mutations;
