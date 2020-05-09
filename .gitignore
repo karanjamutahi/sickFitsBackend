@@ -1,5 +1,4 @@
 node_modules/
-.vscode/
-src/generated/
+.vscode
 **.env
 prisma.yml
