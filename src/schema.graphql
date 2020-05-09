@@ -14,7 +14,11 @@ type Mutation {
     login(email: String!, password: String!): User!
     signout: SuccessMessage
     requestReset(email: String!): SuccessMessage
-    resetPassword(email: String!, resetToken: String!, password: String!, confirmPassword: String!): User!
+    resetPassword(resetToken: String!, password: String!, confirmPassword: String!): User!
+    updatePermissions(where:UserWhereUniqueInput!, permissions:[Permission]!) :UserPermissions
+    addToCart(id: ID!): CartItem
+    removeFromCart(id: ID!): CartItem
+    createOrder(token: String!): Order!
 }
 
 type Query {
@@ -22,7 +26,10 @@ type Query {
     item(where: ItemWhereUniqueInput!): Item!
     itemsConnection(where: ItemWhereInput): ItemConnection!
     me: User 
-    user(where: UserWhereInput): User
+    user(where: UserWhereInput): UserPermissions
+    users: [UserPermissions]!
+    order(id: ID!): Order
+    orders(id: ID!): [Order]!
 }
 
 type User {
@@ -30,4 +37,14 @@ type User {
     firstname: String!
     lastname: String
     email: String!
+    cart: [CartItem!]!
+}
+
+# Type to show only to users with admin privileges
+type UserPermissions {
+    id: ID!
+    firstname: String!
+    lastname: String
+    email: String!
+    permissions: [Permission]!
 }
