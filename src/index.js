@@ -20,6 +20,7 @@ server.express.use((req, res, next) => {
     }
     next();
 });
+
 //TODO: Use Express MiddleWare to populate current user
 server.express.use(async (req, res, next) => {
     //if they aren't logged in, skip this
