@@ -37,8 +37,8 @@ type User {
     firstname: String!
     lastname: String
     email: String!
-    cart: [CartItem]!
-    orders: [Order]!
+    cart: [CartItem]
+    orders: [Order]
 }
 
 # Type to show only to users with admin privileges
